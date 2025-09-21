@@ -290,7 +290,7 @@ export default function CardPreview({
               )}
             </div>
             <div className="text-[11px] tracking-wide text-zinc-500/70">
-              {watermark && "iamsoprintingit.com"}
+              {watermark && "card.peakprinting.top"}
             </div>
           </div>
         )}

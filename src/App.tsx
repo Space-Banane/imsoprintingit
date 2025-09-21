@@ -271,7 +271,7 @@ function App() {
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-zinc-200 to-zinc-500 shadow-inner" />
-            <span className="text-sm tracking-wide font-semibold text-zinc-200">iamsoprintingit.com</span>
+            <span className="text-sm tracking-wide font-semibold text-zinc-200">card.peakprinting.top</span>
           </div>
           <nav className="hidden md:flex gap-8 text-[13px] text-zinc-400">
             <a href="#tool" className="hover:text-zinc-200 transition">Generator</a>

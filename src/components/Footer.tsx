@@ -5,7 +5,7 @@ export default function Footer() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-zinc-200 to-zinc-500 shadow-inner" />
-            <span className="text-zinc-300 font-medium tracking-wide">iamsoprintingit.com</span>
+            <span className="text-zinc-300 font-medium tracking-wide">card.peakprinting.top</span>
           </div>
           <p className="text-zinc-500 leading-relaxed text-xs">Minimal, elegant 3D print spec card generator. Built for makers who care about presentation.</p>
         </div>
@@ -29,7 +29,7 @@ export default function Footer() {
               <a className="hover:text-white transition" href="https://github.com/Space-Banane" target="_blank" rel="noopener noreferrer">GitHub: Space-Banane</a>
             </li>
           </ul>
-          <div className="pt-2 text-[11px] text-zinc-500">&copy; {new Date().getFullYear()} iamsoprintingit.com</div>
+          <div className="pt-2 text-[11px] text-zinc-500">&copy; {new Date().getFullYear()} card.peakprinting.top</div>
         </div>
       </div>
     </footer>
