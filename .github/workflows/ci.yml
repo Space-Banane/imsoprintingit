@@ -17,10 +17,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
     
     - name: Install dependencies
-      run: npm ci
+      run: npm install
     
     - name: Build project
       run: npm run build
@@ -54,4 +53,5 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./dist.zip
         asset_name: dist.zip
+        asset_content_type: application/zip
         asset_content_type: application/zip
