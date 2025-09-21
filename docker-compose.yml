@@ -1,14 +1,28 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  web:
+    image: nginx:alpine
     ports:
-      - "80:80"
-    environment:
-      - GITHUB_REPO=Space-Banane/imsoprintingit
+      - "7546:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    command: >
+      sh -c "
+        echo 'Starting nginx container and downloading latest release...' &&
+        apk add --no-cache curl unzip jq &&
+        curl -s https://api.github.com/repos/Space-Banane/imsoprintingit/releases/latest | 
+        jq -r '.assets[] | select(.name==\"dist.zip\") | .browser_download_url' | 
+        xargs curl -L -o /tmp/dist.zip &&
+        unzip -o /tmp/dist.zip -d /usr/share/nginx/html/ &&
+        rm /tmp/dist.zip &&
+        echo 'Nginx is running and serving the latest release.' &&
+        nginx -g 'daemon off;'
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
