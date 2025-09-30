@@ -69,10 +69,11 @@ function App() {
     layer_height: !!metadata.layer_height
   };
 
-  // Decode share param if present OR load persisted state
+  // Decode share param, direct query params, or load persisted state
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
+      // 1. Packed card param (legacy/share)
       const packed = params.get('card');
       if (packed) {
         const json = atob(packed);
@@ -82,25 +83,84 @@ function App() {
         setDescription(parsed.description || '');
         setMetadata((prev) => ({ ...prev, ...(parsed.metadata || {}) }));
         // Intentionally do not load image from URL share (privacy / size)
-      } else {
-        const saved = localStorage.getItem('printCardState');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setTitle(parsed.title || '');
-          setPrinter(parsed.printer || '');
-          setDescription(parsed.description || '');
-          setMetadata((prev) => ({ ...prev, ...(parsed.metadata || {}) }));
-          if (parsed.imageUrl) setImageUrl(parsed.imageUrl);
-          if (parsed.accentColor) setAccentColor(parsed.accentColor);
-          if (parsed.layout) setLayout(parsed.layout);
-          if (parsed.aspectRatio) setAspectRatio(parsed.aspectRatio);
-          if (parsed.imageFit) setImageFit(parsed.imageFit);
-          if (Array.isArray(parsed.galleryImages)) setGalleryImages(parsed.galleryImages);
-          if (Array.isArray(parsed.enabledFeatures)) setEnabledFeatures(parsed.enabledFeatures);
-          if (typeof parsed.showAuthorCredit === 'boolean') setShowAuthorCredit(parsed.showAuthorCredit);
-          if (parsed.modelingSoftware) setModelingSoftware(parsed.modelingSoftware);
-          if (parsed.modelSource) setModelSource(parsed.modelSource);
-        }
+        return;
+      }
+      // 2. Direct query params (for Octoprint extension)
+      let foundAny = false;
+      // Image: base64 string
+      const imageParam = params.get('image');
+      if (imageParam) {
+        // Accept raw base64 or full data URL
+        const isDataUrl = imageParam.startsWith('data:');
+        setImageUrl(isDataUrl ? imageParam : `data:image/png;base64,${imageParam}`);
+        foundAny = true;
+      }
+      // Title, printer, description
+      const titleParam = params.get('title');
+      if (titleParam) { setTitle(titleParam); foundAny = true; }
+      const printerParam = params.get('printer');
+      if (printerParam) { setPrinter(printerParam); foundAny = true; }
+      const descParam = params.get('description');
+      if (descParam) { setDescription(descParam); foundAny = true; }
+      // Metadata fields
+      const metaKeys = ['speed','layer_height','progress','estimated_time','nozzle_temp','bed_temp','material','print_mode','slicer','color'];
+      let metaObj: { [key: string]: string } = {};
+      metaKeys.forEach(key => {
+        const val = params.get(key);
+        if (val !== null) { metaObj[key] = val; foundAny = true; }
+      });
+      if (Object.keys(metaObj).length > 0) setMetadata(prev => ({ ...prev, ...metaObj }));
+      // Accent color, layout, aspect, imageFit, features, etc.
+      const accentParam = params.get('accentColor');
+      if (accentParam) { setAccentColor(accentParam); foundAny = true; }
+      const layoutParam = params.get('layout');
+      if (layoutParam) { setLayout(layoutParam as any); foundAny = true; }
+      const aspectParam = params.get('aspectRatio');
+      if (aspectParam) { setAspectRatio(aspectParam); foundAny = true; }
+      const imageFitParam = params.get('imageFit');
+      if (imageFitParam) { setImageFit(imageFitParam as any); foundAny = true; }
+      // Gallery images (comma separated base64)
+      const galleryParam = params.get('galleryImages');
+      if (galleryParam) {
+        const imgs = galleryParam.split(',').map(img => img.startsWith('data:') ? img : `data:image/png;base64,${img}`);
+        setGalleryImages(imgs);
+        foundAny = true;
+      }
+      // Features (comma separated)
+      const featuresParam = params.get('enabledFeatures');
+      if (featuresParam) {
+        setEnabledFeatures(featuresParam.split(','));
+        foundAny = true;
+      }
+      // Author credit
+      const authorParam = params.get('showAuthorCredit');
+      if (authorParam) {
+        setShowAuthorCredit(authorParam === 'true');
+        foundAny = true;
+      }
+      const modelingParam = params.get('modelingSoftware');
+      if (modelingParam) { setModelingSoftware(modelingParam); foundAny = true; }
+      const sourceParam = params.get('modelSource');
+      if (sourceParam) { setModelSource(sourceParam); foundAny = true; }
+      if (foundAny) return;
+      // 3. Fallback: persisted state
+      const saved = localStorage.getItem('printCardState');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setTitle(parsed.title || '');
+        setPrinter(parsed.printer || '');
+        setDescription(parsed.description || '');
+        setMetadata((prev) => ({ ...prev, ...(parsed.metadata || {}) }));
+        if (parsed.imageUrl) setImageUrl(parsed.imageUrl);
+        if (parsed.accentColor) setAccentColor(parsed.accentColor);
+        if (parsed.layout) setLayout(parsed.layout);
+        if (parsed.aspectRatio) setAspectRatio(parsed.aspectRatio);
+        if (parsed.imageFit) setImageFit(parsed.imageFit);
+        if (Array.isArray(parsed.galleryImages)) setGalleryImages(parsed.galleryImages);
+        if (Array.isArray(parsed.enabledFeatures)) setEnabledFeatures(parsed.enabledFeatures);
+        if (typeof parsed.showAuthorCredit === 'boolean') setShowAuthorCredit(parsed.showAuthorCredit);
+        if (parsed.modelingSoftware) setModelingSoftware(parsed.modelingSoftware);
+        if (parsed.modelSource) setModelSource(parsed.modelSource);
       }
     } catch {}
   }, []);
